@@ -38,6 +38,7 @@ stages:
       - job: "setupAnsible"
         variables:
           - group: home-k8s-ssh
+          - group: home-k8s-cluster
         displayName: "Setup Ansible"
         steps:
           - checkout: self
@@ -179,9 +180,6 @@ stages:
               KUBE_CONFIG_PATH: "$(Build.StagingDirectory)/kubeconfig"
               CONTROLLER_SSH_KEY_PATH: "$(controllerKey.secureFilePath)"
               CONTROLLER_SSH_USER: "$(home-k8s-ssh-controller-user)"
-              K8S_CLUSTER_DOMAIN: "$(home-k8s-cluster-cluster-domain)"
-              K8S_POD_NETWORK_CIDR: "$(home-k8s-cluster-pod-network-cidr)"
-              K8S_SERVICE_NETWORK_CIDR: "$(home-k8s-cluster-service-network-cidr)"
             inputs:
               targetType: "inline"
               script: |
