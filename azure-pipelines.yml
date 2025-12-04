@@ -32,6 +32,8 @@ variables:
     value: v01
   - name: ansibleWorkspacePath
     value: $(System.DefaultWorkingDirectory)/ansible
+  - name: ansibleConfigPath
+    value: $(ansibleWorkspacePath)/ansible.cfg
 
 stages:
   - stage: "makeBaseCluster"
@@ -97,9 +99,8 @@ stages:
             name: "ansibleBaseCluster"
             displayName: "Make Base K8s Cluster via Ansible"
             env:
-              ANSIBLE_CONFIG: "$(ansibleWorkspacePath)/ansible.cfg"
+              ANSIBLE_CONFIG: "$(ansibleConfigPath)"
               CI_WORKSPACE: "$(System.DefaultWorkingDirectory)"
-              KUBE_CONFIG_PATH: "$(System.DefaultWorkingDirectory)/kubeconfig"
               CONTROLLER_SSH_KEY_PATH: "$(controllerKey.secureFilePath)"
               CONTROLLER_SSH_USER: "$(home-k8s-ssh-controller-user)"
               WORKER_SSH_KEY_PATH: "$(workerKey.secureFilePath)"
@@ -177,7 +178,7 @@ stages:
             name: "fetchKubeConfig"
             displayName: "Fetch Kubeconfig via Ansible"
             env:
-              ANSIBLE_CONFIG: "$(ansibleWorkspacePath)/ansible.cfg"
+              ANSIBLE_CONFIG: "$(ansibleConfigPath)"
               CI_WORKSPACE: "$(System.DefaultWorkingDirectory)"
               KUBE_CONFIG_PATH: "$(Build.StagingDirectory)/kubeconfig"
               CONTROLLER_SSH_KEY_PATH: "$(controllerKey.secureFilePath)"
