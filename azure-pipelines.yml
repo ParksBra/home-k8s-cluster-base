@@ -162,7 +162,7 @@ stages:
             name: controllerKey
             displayName: 'Fetch Controller SSH Key'
             inputs:
-              secureFile: "home-k8s-controller.pem"
+              secureFile: "$(home-k8s-ssh-controller-key-secret-file)"
 
           - task: Bash@3
             name: "fetchKubeConfig"
