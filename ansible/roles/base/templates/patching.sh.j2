@@ -1,0 +1,8 @@
+{% if patching_enabled %}
+sleep 10
+{% endif %}
+apt update -y
+apt full-upgrade -y
+sleep 10
+shutdown -r now
+{% endif %}
