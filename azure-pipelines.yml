@@ -7,20 +7,6 @@ pool:
   name: 'local-lab'
   vmImage: 'ubuntu-latest'
 
-resources:
-  repositories:
-    - repository: home-k8s-tf-platform-network
-      type: github
-      endpoint: ParksBra
-      ref: migrate_to_self_contained
-      name: ParksBra/home-k8s-tf-platform-network
-
-    - repository: home-k8s-tf-platform-storage
-      type: github
-      endpoint: ParksBra
-      ref: migrate_to_self_contained
-      name: ParksBra/home-k8s-tf-platform-storage
-
 variables:
   - name: venvPath
     value: $(System.DefaultWorkingDirectory)/venv
@@ -34,14 +20,17 @@ variables:
     value: $(System.DefaultWorkingDirectory)/ansible
   - name: ansibleConfigPath
     value: $(ansibleWorkspacePath)/ansible.cfg
+  - name: ansibleDebug
+    value: "false"
 
 stages:
   - stage: "makeBaseCluster"
     displayName: "Make Base K8s Cluster"
+    variables:
+      - group: home-k8s-ssh
     jobs:
       - job: "setupAnsible"
         variables:
-          - group: home-k8s-ssh
           - group: home-k8s-cluster
         displayName: "Setup Ansible"
         steps:
@@ -72,7 +61,7 @@ stages:
 
           - task: Bash@3
             name: "installDependencies"
-            displayName: "Install Role Dependencies"
+            displayName: "Install Dependencies"
             condition: ne(variables.cacheRestored, 'true')
             inputs:
               targetType: "inline"
@@ -87,19 +76,20 @@ stages:
             name: controllerKey
             displayName: 'Fetch Controller SSH Key'
             inputs:
-              secureFile: "home-k8s-controller.pem"
+              secureFile: "$(home-k8s-ssh-controller-key-secret-file)"
 
           - task: DownloadSecureFile@1
             name: workerKey
             displayName: 'Fetch Worker SSH Key'
             inputs:
-              secureFile: "home-k8s-worker.pem"
+              secureFile: "$(home-k8s-ssh-worker-key-secret-file)"
 
           - task: Bash@3
             name: "ansibleBaseCluster"
             displayName: "Make Base K8s Cluster via Ansible"
             env:
               ANSIBLE_CONFIG: "$(ansibleConfigPath)"
+              DEBUG: "$(ansibleDebug)"
               CI_WORKSPACE: "$(System.DefaultWorkingDirectory)"
               CONTROLLER_SSH_KEY_PATH: "$(controllerKey.secureFilePath)"
               CONTROLLER_SSH_USER: "$(home-k8s-ssh-controller-user)"
@@ -180,6 +170,7 @@ stages:
             displayName: "Fetch Kubeconfig via Ansible"
             env:
               ANSIBLE_CONFIG: "$(ansibleConfigPath)"
+              DEBUG: "$(ansibleDebug)"
               CI_WORKSPACE: "$(System.DefaultWorkingDirectory)"
               KUBE_CONFIG_PATH: "$(Build.StagingDirectory)/kubeconfig"
               CONTROLLER_SSH_KEY_PATH: "$(controllerKey.secureFilePath)"
