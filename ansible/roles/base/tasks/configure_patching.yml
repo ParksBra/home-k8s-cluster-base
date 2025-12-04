@@ -10,12 +10,12 @@
 - name: Configure patching cron job
   ansible.builtin.cron:
     name: "auto_patching"
-    minute: "{{ patching_cron[0] }}"
-    hour: "{{ patching_cron[1] }}"
-    day: "{{ patching_cron[2] }}"
-    month: "{{ patching_cron[3] }}"
-    weekday: "{{ patching_cron[4] }}"
+    minute: "{{ host.patching.cron[0] }}"
+    hour: "{{ host.patching.cron[1] }}"
+    day: "{{ host.patching.cron[2] }}"
+    month: "{{ host.patching.cron[3] }}"
+    weekday: "{{ host.patching.cron[4] }}"
     job: "sudo /root/patching.sh"
     user: root
-    state: "{{ 'present' if patching_enabled else 'absent' }}"
+    state: "{{ 'present' if host.patching.enabled else 'absent' }}"
   become: true

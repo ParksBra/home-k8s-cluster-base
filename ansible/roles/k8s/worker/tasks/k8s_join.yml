@@ -14,11 +14,11 @@
 - name: Join to Kubernetes cluster
   when: reset_success
   ansible.builtin.shell: |
-    kubeadm join --token {{ k8s_discovery_token }} \
+    kubeadm join --token {{ kubernetes.cluster.kubeadm.token }} \
                 --discovery-token-unsafe-skip-ca-verification \
-                --cri-socket=unix://{{ k8s_container_runtime_socket }} \
-                {{ k8s_kubeadm_opts }} \
-                {{ k8s_apiserver_ip }}:{{ k8s_apiserver_port }}
+                --cri-socket=unix://{{ kubernetes.cluster.container.runtime.socket }} \
+                {{ kubernetes.cluster.kubeadm.extra_args | join(' ') }} \
+                {{ kubernetes.controller.apiserver.ip }}:{{ kubernetes.controller.apiserver.port }}
   register: join_k8s_cluster
   changed_when: "'This node has joined the cluster' in join_k8s_cluster.stdout"
   environment:

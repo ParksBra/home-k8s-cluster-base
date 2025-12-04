@@ -1,6 +1,6 @@
 - name: Install k8s components
   ansible.builtin.apt:
-    name: "{{ item }}={{ k8s_version }}*"
+    name: "{{ item }}={{ kubernetes.version }}*"
     state: present
     force: true
   become: true

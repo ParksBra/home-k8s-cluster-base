@@ -4,20 +4,20 @@
 - name: Create/Init k8s cluster
   when: reset_success
   ansible.builtin.shell: |
-    kubeadm init --service-cidr {{ k8s_service_network_cidr }} \
-                  --kubernetes-version v{{ k8s_version }} \
-                  --pod-network-cidr {{ k8s_pod_network_cidr }} \
-                  --token {{ k8s_discovery_token }} \
-                  --apiserver-advertise-address {{ k8s_apiserver_ip }} \
-                  --apiserver-bind-port {{ k8s_apiserver_port }} \
-                  --cri-socket=unix://{{ k8s_container_runtime_socket }} \
-                  --service-dns-domain {{ k8s_cluster_domain }} \
-                  {{ k8s_kubeadm_opts }} \
-                  {{ k8s_init_opts }}
+    kubeadm init --service-cidr {{ kubernetes.cluster.network.service_cidr }} \
+                  --kubernetes-version v{{ kubernetes.version }} \
+                  --pod-network-cidr {{ kubernetes.cluster.network.pod_cidr }} \
+                  --token {{ kubernetes.cluster.kubeadm.token }} \
+                  --apiserver-advertise-address {{ kubernetes.controller.apiserver.ip }} \
+                  --apiserver-bind-port {{ kubernetes.controller.apiserver.port }} \
+                  --cri-socket=unix://{{ kubernetes.cluster.container.runtime.socket }} \
+                  --service-dns-domain {{ kubernetes.cluster.network.domain }} \
+                  {{ kubernetes.cluster.kubeadm.extra_args | join(' ') }} \
+                  {{ kubernetes.cluster.kubeadm.extra_init_args | join(' ') }}
   register: init_k8s_cluster
   changed_when: "'Your Kubernetes control-plane has initialized successfully' in init_k8s_cluster.stdout"
   environment:
-    no_proxy: "$no_proxy,.svc,.svc.{{ k8s_cluster_domain }}"
+    no_proxy: "$no_proxy,.svc,.svc.{{ kubernetes.cluster.network.domain }}"
   no_log: "{{ not debug }}"
   any_errors_fatal: true
 
@@ -35,7 +35,7 @@
   become: true
   ansible.builtin.copy:
     src: "{{ k8s_kubectl_config_source }}"
-    dest: "{{ k8s_kubectl_config_path }}"
+    dest: "{{ kubernetes.controller.kubeconfig.user_path }}"
     owner: "{{ ansible_ssh_user }}"
     group: "{{ ansible_ssh_user }}"
     mode: 0600
