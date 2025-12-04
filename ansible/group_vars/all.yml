@@ -30,4 +30,3 @@ k8s_discovery_token: "{{ lookup('env', 'K8S_DISCOVERY_TOKEN') }}"
 k8s_force_cluster_reset: "{{ lookup('env', 'K8S_FORCE_CLUSTER_RESET') | default(false) | bool }}"
 k8s_kubelet_extra_args: "" # Additional args to pass to kubelet service
 k8s_kubelet_include_extra_args: false # Whether to include extra args file for kubelet
-
