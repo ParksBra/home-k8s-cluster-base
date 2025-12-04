@@ -24,8 +24,10 @@ resources:
 variables:
   - name: venvPath
     value: $(System.DefaultWorkingDirectory)/venv
-  - name: requirementsFileName
+  - name: pythonRequirementsFileName
     value: requirements.txt
+  - name: ansibleRequirementsFileName
+    value: requirements.yml
   - name: cacheVersion
     value: v01
   - name: ansibleWorkspacePath
@@ -62,7 +64,7 @@ stages:
             name: "cacheVenv"
             displayName: "Cache Virtual Environment"
             inputs:
-              key: 'venv$(cacheVersion) | "$(Agent.OS)" | $(System.DefaultWorkingDirectory)/$(requirementsFileName)'
+              key: 'venv$(cacheVersion) | "$(Agent.OS)" | $(ansibleWorkspacePath)/$(pythonRequirementsFileName)'
               path: $(venvPath)
               cacheHitVar: cacheRestored
 
@@ -74,9 +76,9 @@ stages:
               targetType: "inline"
               script: |
                 echo "##[group]Install pip requirements"
-                    $(venvPath)/bin/pip install --upgrade -r $(System.DefaultWorkingDirectory)/$(requirementsFileName)
+                    $(venvPath)/bin/pip install --upgrade -r $(ansibleWorkspacePath)/$(pythonRequirementsFileName)
                     $(venvPath)/bin/pip install ansible
-                    ansible-galaxy collection install --force -r $(System.DefaultWorkingDirectory)/roles/requirements.yml
+                    ansible-galaxy collection install --force -r $(ansibleWorkspacePath)/$(ansibleRequirementsFileName)
                 echo "##[endgroup]"
 
           - task: DownloadSecureFile@1
@@ -148,7 +150,7 @@ stages:
             name: "cacheVenv"
             displayName: "Cache Virtual Environment"
             inputs:
-              key: 'venv$(cacheVersion) | "$(Agent.OS)" | $(ansibleWorkspacePath)/$(requirementsFileName)'
+              key: 'venv$(cacheVersion) | "$(Agent.OS)" | $(ansibleWorkspacePath)/$(pythonRequirementsFileName)'
               path: $(venvPath)
               cacheHitVar: cacheRestored
 
@@ -160,9 +162,9 @@ stages:
               targetType: "inline"
               script: |
                 echo "##[group]Install pip requirements"
-                    $(venvPath)/bin/pip install --upgrade -r $(ansibleWorkspacePath)/$(requirementsFileName)
+                    $(venvPath)/bin/pip install --upgrade -r $(ansibleWorkspacePath)/$(pythonRequirementsFileName)
                     $(venvPath)/bin/pip install ansible
-                    ansible-galaxy collection install --force -r $(ansibleWorkspacePath)/requirements.yml
+                    ansible-galaxy collection install --force -r $(ansibleWorkspacePath)/$(ansibleRequirementsFileName)
                 echo "##[endgroup]"
 
           - task: DownloadSecureFile@1
