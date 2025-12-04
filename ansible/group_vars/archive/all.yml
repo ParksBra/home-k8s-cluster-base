@@ -2,9 +2,9 @@ debug: "{{ lookup('env', 'DEBUG') | default(false) | bool }}"
 
 ansible_python_interpreter: "/usr/bin/python3.13"
 
-temp_directory: "/tmp/ansible_home"
+remote_temp_directory: "/tmp/ansible_home"
 
-helm_values_temp_file: "{{ temp_directory }}/helm_values.yml"
+helm_values_temp_file: "{{ remote_temp_directory }}/helm_values.yml"
 
 host_dns_nameservers: ["1.1.1.1", "1.0.0.1"]
 

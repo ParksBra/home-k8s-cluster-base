@@ -4,15 +4,15 @@
       - chart: homeassistant
         fragments:
           - homeassistant
-        final_temp_path: "{{ temp_directory }}/homeassistant_helm_values.yml"
+        final_temp_path: "{{ remote_temp_directory }}/homeassistant_helm_values.yml"
       - chart: mosquitto
         fragments:
           - mosquitto
-        final_temp_path: "{{ temp_directory }}/mosquitto_helm_values.yml"
+        final_temp_path: "{{ remote_temp_directory }}/mosquitto_helm_values.yml"
       - chart: zigbee2mqtt
         fragments:
           - zigbee2mqtt
-        final_temp_path: "{{ temp_directory }}/zigbee2mqtt_helm_values.yml"
+        final_temp_path: "{{ remote_temp_directory }}/zigbee2mqtt_helm_values.yml"
 
 - name: Run terraform
   ansible.builtin.include_role:

@@ -1,4 +1,4 @@
-temp_directory: "/tmp/ansible_home"
+remote_temp_directory: "/tmp/ansible_home"
 
 host_dns_nameservers: ["75.75.75.75", "75.75.76.76"]
 

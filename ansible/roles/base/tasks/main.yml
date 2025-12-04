@@ -20,6 +20,6 @@
 
 - name: Create temporary directory
   ansible.builtin.file:
-    path: "{{ temp_directory }}"
+    path: "{{ remote_temp_directory }}"
     state: directory
     mode: 0755
