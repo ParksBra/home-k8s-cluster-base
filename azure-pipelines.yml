@@ -22,12 +22,11 @@ variables:
     value: $(ansibleWorkspacePath)/ansible.cfg
   - name: ansibleDebug
     value: "false"
+  - group: home-k8s-ssh
 
 stages:
   - stage: "makeBaseCluster"
     displayName: "Make Base K8s Cluster"
-    variables:
-      - group: home-k8s-ssh
     jobs:
       - job: "setupAnsible"
         variables:
