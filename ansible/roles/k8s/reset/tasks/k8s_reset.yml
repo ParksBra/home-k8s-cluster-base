@@ -1,8 +1,8 @@
 - name: Reset Kubernetes
   ansible.builtin.shell: "kubeadm reset \
-                                  --force \
-                                  --cri-socket=unix://{{ kubernetes.cluster.container.runtime.socket }} \
-                                  --kubeconfig={{ kubernetes.controller.kubeconfig.user_path }}"
+    --force \
+    --cri-socket=unix://{{ kubernetes.cluster.container.runtime.socket }} \
+    --kubeconfig={{ kubernetes.controller.kubeconfig.user_path }}"
   register: reset_k8s
   changed_when: "reset_k8s.rc == 0"
   notify: k8s_cleanup
