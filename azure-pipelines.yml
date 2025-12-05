@@ -28,10 +28,10 @@ stages:
   - stage: "makeBaseCluster"
     displayName: "Make Base K8s Cluster"
     jobs:
-      - job: "setupAnsible"
+      - job: "applyAnsible"
         variables:
           - group: home-k8s-cluster
-        displayName: "Setup Ansible"
+        displayName: "Apply Ansible Playbook"
         steps:
           - checkout: self
             name: "checkoutCurrentRepo"
@@ -115,10 +115,10 @@ stages:
   - stage: "fetchKubeconfigArtifact"
     displayName: "Fetch Kubeconfig for Artifact"
     jobs:
-      - job: "setupAnsible"
+      - job: "applyAnsible"
         variables:
           - group: home-k8s-ssh
-        displayName: "Setup Ansible"
+        displayName: "Apply Ansible Playbook"
         steps:
           - checkout: self
             name: "checkoutCurrentRepo"
