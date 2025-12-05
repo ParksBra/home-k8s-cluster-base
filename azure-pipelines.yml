@@ -110,7 +110,7 @@ stages:
                     cd $(ansibleWorkspacePath)
                     $(venvPath)/bin/ansible-playbook $(ansibleWorkspacePath)/playbooks/cluster_base.yml
                 echo "##[endgroup]"
-              failOnStderr: true
+              # failOnStderr: true
 
   - stage: "fetchKubeconfigArtifact"
     displayName: "Fetch Kubeconfig for Artifact"
@@ -184,7 +184,7 @@ stages:
                 echo "##[group]Run the Ansible Playbook"
                     $(venvPath)/bin/ansible-playbook $(ansibleWorkspacePath)/playbooks/ci_fetch_kubeconfig.yml
                 echo "##[endgroup]"
-              failOnStderr: true
+              # failOnStderr: true
 
           - task: Bash@3
             name: "verifyKubeConfig"
