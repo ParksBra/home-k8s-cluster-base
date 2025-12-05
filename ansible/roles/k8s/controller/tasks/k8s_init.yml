@@ -24,7 +24,7 @@
 - name: Create user k8s directory
   when: init_k8s_cluster.rc == 0
   ansible.builtin.file:
-    path: "{{ k8s_kubectl_config_dir }}"
+    path: "{{ kubernetes.controller.kubeconfig.user_path | dirname }}"
     state: directory
     mode: 0700
   become: true
@@ -34,7 +34,7 @@
   when: init_k8s_cluster.rc == 0
   become: true
   ansible.builtin.copy:
-    src: "{{ k8s_kubectl_config_source }}"
+    src: "{{ kubernetes.controller.kubeconfig.source }}"
     dest: "{{ kubernetes.controller.kubeconfig.user_path }}"
     owner: "{{ kubernetes.controller.kubeconfig.user }}"
     group: "{{ kubernetes.controller.kubeconfig.user }}"
