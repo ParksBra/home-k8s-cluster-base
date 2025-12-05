@@ -28,7 +28,7 @@
     state: directory
     mode: 0700
   become: true
-  become_user: "{{ ansible_ssh_user }}"
+  become_user: "{{ kubernetes.controller.kubeconfig.user }}"
 
 - name: Copy admin.conf to Home directory
   when: init_k8s_cluster.rc == 0
@@ -36,7 +36,7 @@
   ansible.builtin.copy:
     src: "{{ k8s_kubectl_config_source }}"
     dest: "{{ kubernetes.controller.kubeconfig.user_path }}"
-    owner: "{{ ansible_ssh_user }}"
-    group: "{{ ansible_ssh_user }}"
+    owner: "{{ kubernetes.controller.kubeconfig.user }}"
+    group: "{{ kubernetes.controller.kubeconfig.user }}"
     mode: 0600
     remote_src: true

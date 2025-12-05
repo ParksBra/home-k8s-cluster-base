@@ -1,9 +1,6 @@
-host:
-  temp_directory: "/tmp/ansible_home"
-  network:
-    dns_nameservers:
-      - "75.75.75.75"
-      - "75.75.76.76"
-  patching:
-    enabled: false
-    cron: ['15', '2', '*', '*', '1'] # 2:15 AM every Monday
+host.temp_directory: "/tmp/ansible_home"
+host.network.dns_nameservers:
+  - "75.75.75.75"
+  - "75.75.76.76"
+host.patching.enabled: false
+host.patching.cron: ['15', '2', '*', '*', '1'] # 2:15 AM every Monday

@@ -1,4 +1,2 @@
 ansible_host: home-k8s-worker1.local
-host:
-  patching:
-    cron: ['45', '2', '*', '*', '1']
+host.patching.cron: ['45', '2', '*', '*', '1']
