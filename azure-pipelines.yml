@@ -22,6 +22,8 @@ variables:
     value: $(ansibleWorkspacePath)/ansible.cfg
   - name: ansibleDebug
     value: "false"
+  - name: resetClusterFlag
+    value: "true"
   - group: home-k8s-ssh
 
 stages:
@@ -98,6 +100,7 @@ stages:
               K8S_POD_NETWORK_CIDR: "$(home-k8s-cluster-pod-network-cidr)"
               K8S_SERVICE_NETWORK_CIDR: "$(home-k8s-cluster-service-network-cidr)"
               K8S_DISCOVERY_TOKEN: "$(home-k8s-cluster-discovery-token)"
+              K8S_FORCE_CLUSTER_RESET: "$(resetClusterFlag)"
             inputs:
               targetType: "inline"
               script: |
