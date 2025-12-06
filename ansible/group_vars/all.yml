@@ -21,13 +21,13 @@ kubernetes:
   patch_version: "{{ kubernetes.version.split('.')[0] }}.{{ kubernetes.version.split('.')[1] }}"
   cluster:
     network:
-      pod_cidr: "{{ k8s_pod_network_cidr }}"
-      service_cidr: "{{ k8s_service_network_cidr }}"
-      cluster_domain: "{{ k8s_cluster_domain }}"
+      pod_cidr: "{{ lookup('env', 'K8S_POD_NETWORK_CIDR') }}"
+      service_cidr: "{{ lookup('env', 'K8S_SERVICE_NETWORK_CIDR') }}"
+      cluster_domain: "{{ lookup('env', 'K8S_CLUSTER_DOMAIN') }}"
     container:
       runtime:
         name: "containerd"
-        socket: "/var/run/{{ kubernetes.container.runtime.name }}/{{ kubernetes.container.runtime.name }}.sock"
+        socket: "/var/run/{{ kubernetes.cluster.container.runtime.name }}/{{ kubernetes.cluster.container.runtime.name }}.sock"
     kubelet:
       extra_args: []
     kubeadm:
