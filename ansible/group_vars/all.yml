@@ -23,7 +23,7 @@ kubernetes:
     network:
       pod_cidr: "{{ lookup('env', 'K8S_POD_NETWORK_CIDR') }}"
       service_cidr: "{{ lookup('env', 'K8S_SERVICE_NETWORK_CIDR') }}"
-      cluster_domain: "{{ lookup('env', 'K8S_CLUSTER_DOMAIN') }}"
+      domain: "{{ lookup('env', 'K8S_CLUSTER_DOMAIN') }}"
     container:
       runtime:
         name: "containerd"
