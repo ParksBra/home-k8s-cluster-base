@@ -48,12 +48,18 @@ stages:
             - playbooks/cluster_base.yml
           ansibleDebug: false
           ansiblePlaybookExtraEnvironmentVariables:
-            CI_WORKSPACE: "$(System.DefaultWorkingDirectory)"
-            K8S_CLUSTER_DOMAIN: "$(home-k8s-cluster-cluster-domain)"
-            K8S_POD_NETWORK_CIDR: "$(home-k8s-cluster-pod-network-cidr)"
-            K8S_SERVICE_NETWORK_CIDR: "$(home-k8s-cluster-service-network-cidr)"
-            K8S_DISCOVERY_TOKEN: "$(home-k8s-cluster-discovery-token)"
-            K8S_FORCE_CLUSTER_RESET: "false"
+            - name: CI_WORKSPACE
+              value: "$(System.DefaultWorkingDirectory)"
+            - name: K8S_CLUSTER_DOMAIN
+              value: "$(home-k8s-cluster-cluster-domain)"
+            - name: K8S_POD_NETWORK_CIDR
+              value: "$(home-k8s-cluster-pod-network-cidr)"
+            - name: K8S_SERVICE_NETWORK_CIDR
+              value: "$(home-k8s-cluster-service-network-cidr)"
+            - name: K8S_DISCOVERY_TOKEN
+              value: "$(home-k8s-cluster-discovery-token)"
+            - name: K8S_FORCE_CLUSTER_RESET
+              value: "false"
 
   - stage: "fetchKubeconfigArtifact"
     displayName: "Fetch Kubeconfig for Artifact"
@@ -76,8 +82,10 @@ stages:
             - playbooks/ci_fetch_kubeconfig.yml
           ansibleDebug: false
           ansiblePlaybookExtraEnvironmentVariables:
-            CI_WORKSPACE: "$(System.DefaultWorkingDirectory)"
-            KUBE_CONFIG_DEST_PATH: "$(kubeconfigArtifactPath)"
+            - name: CI_WORKSPACE
+              value: "$(System.DefaultWorkingDirectory)"
+            - name: KUBE_CONFIG_DEST_PATH
+              value: "$(kubeconfigArtifactPath)"
 
       - job: "publishKubeconfigArtifact"
         displayName: "Publish Kubeconfig Artifact"
