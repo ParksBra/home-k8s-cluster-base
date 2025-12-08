@@ -9,6 +9,8 @@ pool:
 
 variables:
   - group: home-k8s-ssh
+  - name: forceClusterReset
+    value: 'true'
   - name: kubeconfigArtifactPath
     value: '$(Build.ArtifactStagingDirectory)/kubeconfig'
 
@@ -62,7 +64,7 @@ stages:
                 - name: K8S_DISCOVERY_TOKEN
                   value: "$(home-k8s-cluster-discovery-token)"
                 - name: K8S_FORCE_CLUSTER_RESET
-                  value: "false"
+                  value: "$(forceClusterReset)"
 
   - stage: "fetchKubeconfigArtifact"
     displayName: "Fetch Kubeconfig for Artifact"
