@@ -7,10 +7,21 @@ pool:
   name: 'local-lab'
   vmImage: 'ubuntu-latest'
 
+parameters:
+  - name: forceClusterReset
+    type: boolean
+    default: "false"
+
+  - name: ansibleDebug
+    type: boolean
+    default: "false"
+
 variables:
   - group: home-k8s-ssh
   - name: forceClusterReset
-    value: 'true'
+    value: ${{ parameters.forceClusterReset }}
+  - name: ansibleDebug
+    value: ${{ parameters.ansibleDebug }}
   - name: kubeconfigArtifactPath
     value: '$(Build.ArtifactStagingDirectory)/kubeconfig'
 
@@ -51,7 +62,7 @@ stages:
                   keyPassphrase: ""
               ansiblePlaybooks:
                 - site.yml
-              ansibleDebug: false
+              ansibleDebug: $(ansibleDebug)
               ansiblePlaybookExtraEnvironmentVariables:
                 - name: CI_WORKSPACE
                   value: "$(Pipeline.Workspace)"
@@ -90,7 +101,7 @@ stages:
                   keyPassphrase: ""
               ansiblePlaybooks:
                 - fetch_kubeconfig.yml
-              ansibleDebug: false
+              ansibleDebug: $(ansibleDebug)
               ansiblePlaybookExtraEnvironmentVariables:
                 - name: CI_WORKSPACE
                   value: "$(Pipeline.Workspace)"
