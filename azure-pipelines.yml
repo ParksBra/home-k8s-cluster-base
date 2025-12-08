@@ -22,7 +22,7 @@ resources:
 
 stages:
   - stage: "makeBaseCluster"
-    displayName: "Make Base K8s Cluster"
+    displayName: "Make and Provision Base K8s Cluster"
     variables:
       - group: home-k8s-cluster
     jobs:
