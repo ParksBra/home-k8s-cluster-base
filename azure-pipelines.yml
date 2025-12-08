@@ -38,11 +38,11 @@ stages:
           ansibleSshConfigurations:
             - group: k8s_controller
               user: controller
-              keySecretFileName: home-k8s-ssh-controller-private-key
+              keySecretFileName: $(home-k8s-ssh-controller-key-secret-file)
               keyPassphrase: ""
             - group: k8s_worker
               user: worker
-              keySecretFileName: home-k8s-ssh-worker-private-key
+              keySecretFileName: $(home-k8s-ssh-worker-key-secret-file)
               keyPassphrase: ""
           ansiblePlaybooks:
             - playbooks/cluster_base.yml
@@ -76,7 +76,7 @@ stages:
           ansibleSshConfigurations:
             - group: k8s_controller
               user: controller
-              keySecretFileName: home-k8s-ssh-controller-private-key
+              keySecretFileName: $(home-k8s-ssh-controller-key-secret-file)
               keyPassphrase: ""
           ansiblePlaybooks:
             - playbooks/ci_fetch_kubeconfig.yml
