@@ -49,7 +49,7 @@ stages:
           ansibleDebug: false
           ansiblePlaybookExtraEnvironmentVariables:
             - name: CI_WORKSPACE
-              value: "$(System.DefaultWorkingDirectory)"
+              value: "$(Pipeline.Workspace)"
             - name: K8S_CLUSTER_DOMAIN
               value: "$(home-k8s-cluster-cluster-domain)"
             - name: K8S_POD_NETWORK_CIDR
@@ -86,7 +86,7 @@ stages:
           ansibleDebug: false
           ansiblePlaybookExtraEnvironmentVariables:
             - name: CI_WORKSPACE
-              value: "$(System.DefaultWorkingDirectory)"
+              value: "$(Pipeline.Workspace)"
             - name: KUBE_CONFIG_DEST_PATH
               value: "$(kubeconfigArtifactPath)"
 
