@@ -12,6 +12,14 @@ variables:
   - name: kubeconfigArtifactPath
     value: '$(Build.ArtifactStagingDirectory)/kubeconfig'
 
+resources:
+  repositories:
+    - repository: templates
+      type: github
+      endpoint: ParksBra
+      ref: initial_development
+      name: ParksBra/home-k8s-ado-templates
+
 stages:
   - stage: "makeBaseCluster"
     displayName: "Make Base K8s Cluster"
