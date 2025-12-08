@@ -63,6 +63,8 @@ stages:
 
   - stage: "fetchKubeconfigArtifact"
     displayName: "Fetch Kubeconfig for Artifact"
+    dependsOn: "makeBaseCluster"
+    condition: succeeded('makeBaseCluster')
     jobs:
       - template: apply-ansible.yml@templates
         parameters:
@@ -87,12 +89,18 @@ stages:
             - name: KUBE_CONFIG_DEST_PATH
               value: "$(kubeconfigArtifactPath)"
 
-      - job: "publishKubeconfigArtifact"
-        displayName: "Publish Kubeconfig Artifact"
+  - stage: "publishKubeconfigArtifact"
+    displayName: "Publish Kubeconfig Artifact"
+    dependsOn: "fetchKubeconfigArtifact"
+    condition: succeeded('fetchKubeconfigArtifact')
+    jobs:
+      - job: "publish"
+        displayName: "Publish Artifact"
+        dependsOn: "applyAnsiblePlaybooks"
         steps:
           - task: Bash@3
             name: "verifyKubeConfig"
-            displayName: "Verify Kubeconfig File Transfer"
+            displayName: "Verify Artifiact File Transfer"
             env:
               KUBE_CONFIG_ARTIFACT_PATH: "$(kubeconfigArtifactPath)"
             inputs:
@@ -109,5 +117,5 @@ stages:
               failOnStderr: true
 
           - publish: $(kubeconfigArtifactPath)
-            displayName: 'Publish Kubeconfig File as Artifact'
+            displayName: 'Publish File as Artifact'
             artifact: kubeConfig
