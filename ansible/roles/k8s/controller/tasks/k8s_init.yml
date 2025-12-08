@@ -1,6 +1,20 @@
 - name: Reset cluster
   ansible.builtin.include_tasks: k8s_reset_cluster.yml
 
+- name: Debug cluster config
+  when: debug
+  ansible.builtin.debug:
+    msg:
+      pod_network_cidr: "{{ kubernetes.cluster.network.pod_cidr }}"
+      service_network_cidr: "{{ kubernetes.cluster.network.service_cidr }}"
+      cluster_domain: "{{ kubernetes.cluster.network.domain }}"
+      container_runtime: "{{ kubernetes.cluster.container.runtime.name }}"
+      container_runtime_socket: "{{ kubernetes.cluster.container.runtime.socket }}"
+      cluster_controller_ip: "{{ kubernetes.controller.ip }}"
+      cluster_apiserver_ip: "{{ kubernetes.controller.apiserver.ip }}"
+      cluster_apiserver_port: "{{ kubernetes.controller.apiserver.port }}"
+      cluster_force_reset: "{{ kubernetes.cluster.kubeadm.force_reset }}"
+
 - name: Create/Init k8s cluster
   when: reset_success
   ansible.builtin.shell: |
