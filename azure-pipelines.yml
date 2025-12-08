@@ -96,7 +96,6 @@ stages:
     jobs:
       - job: "publish"
         displayName: "Publish Artifact"
-        dependsOn: "applyAnsiblePlaybooks"
         steps:
           - task: Bash@3
             name: "verifyKubeConfig"
