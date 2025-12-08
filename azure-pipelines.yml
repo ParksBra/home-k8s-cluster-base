@@ -26,74 +26,75 @@ stages:
     variables:
       - group: home-k8s-cluster
     jobs:
-      - template: apply-ansible.yml@templates
-        parameters:
-          pythonVenvPath: "$(System.DefaultWorkingDirectory)/.venv"
-          pythonVenvCacheVersion: "1"
-          pythonRequirementsFileRelativePath: "requirements.txt"
-          ansibleRequirementsFileRelativePath: "requirements.yml"
-          ansibleRepository: "self"
-          ansibleRepositoryAnsiblePath: "ansible"
-          ansibleConfigRelativePath: "ansible.cfg"
-          ansibleSshConfigurations:
-            - group: k8s_controller
-              user: controller
-              keySecretFileName: $(home-k8s-ssh-controller-key-secret-file)
-              keyPassphrase: ""
-            - group: k8s_worker
-              user: worker
-              keySecretFileName: $(home-k8s-ssh-worker-key-secret-file)
-              keyPassphrase: ""
-          ansiblePlaybooks:
-            - site.yml
-          ansibleDebug: false
-          ansiblePlaybookExtraEnvironmentVariables:
-            - name: CI_WORKSPACE
-              value: "$(Pipeline.Workspace)"
-            - name: K8S_CLUSTER_DOMAIN
-              value: "$(home-k8s-cluster-cluster-domain)"
-            - name: K8S_POD_NETWORK_CIDR
-              value: "$(home-k8s-cluster-pod-network-cidr)"
-            - name: K8S_SERVICE_NETWORK_CIDR
-              value: "$(home-k8s-cluster-service-network-cidr)"
-            - name: K8S_DISCOVERY_TOKEN
-              value: "$(home-k8s-cluster-discovery-token)"
-            - name: K8S_FORCE_CLUSTER_RESET
-              value: "false"
+      - job: "provisionCluster"
+        displayName: "Provision Base K8s Cluster"
+        steps:
+          - template: apply-ansible.yml@templates
+            parameters:
+              pythonVenvPath: "$(System.DefaultWorkingDirectory)/.venv"
+              pythonVenvCacheVersion: "1"
+              pythonRequirementsFileRelativePath: "requirements.txt"
+              ansibleRequirementsFileRelativePath: "requirements.yml"
+              ansibleRepository: "self"
+              ansibleRepositoryAnsiblePath: "ansible"
+              ansibleConfigRelativePath: "ansible.cfg"
+              ansibleSshConfigurations:
+                - group: k8s_controller
+                  user: controller
+                  keySecretFileName: $(home-k8s-ssh-controller-key-secret-file)
+                  keyPassphrase: ""
+                - group: k8s_worker
+                  user: worker
+                  keySecretFileName: $(home-k8s-ssh-worker-key-secret-file)
+                  keyPassphrase: ""
+              ansiblePlaybooks:
+                - site.yml
+              ansibleDebug: false
+              ansiblePlaybookExtraEnvironmentVariables:
+                - name: CI_WORKSPACE
+                  value: "$(Pipeline.Workspace)"
+                - name: K8S_CLUSTER_DOMAIN
+                  value: "$(home-k8s-cluster-cluster-domain)"
+                - name: K8S_POD_NETWORK_CIDR
+                  value: "$(home-k8s-cluster-pod-network-cidr)"
+                - name: K8S_SERVICE_NETWORK_CIDR
+                  value: "$(home-k8s-cluster-service-network-cidr)"
+                - name: K8S_DISCOVERY_TOKEN
+                  value: "$(home-k8s-cluster-discovery-token)"
+                - name: K8S_FORCE_CLUSTER_RESET
+                  value: "false"
 
   - stage: "fetchKubeconfigArtifact"
     displayName: "Fetch Kubeconfig for Artifact"
     dependsOn: "makeBaseCluster"
     condition: succeeded('makeBaseCluster')
     jobs:
-      - template: apply-ansible.yml@templates
-        parameters:
-          jobReference: "fetchKubeconfig"
-          pythonVenvPath: "$(System.DefaultWorkingDirectory)/.venv"
-          pythonVenvCacheVersion: "1"
-          pythonRequirementsFileRelativePath: "requirements.txt"
-          ansibleRequirementsFileRelativePath: "requirements.yml"
-          ansibleRepository: "self"
-          ansibleRepositoryAnsiblePath: "ansible"
-          ansibleConfigRelativePath: "ansible.cfg"
-          ansibleSshConfigurations:
-            - group: k8s_controller
-              user: controller
-              keySecretFileName: $(home-k8s-ssh-controller-key-secret-file)
-              keyPassphrase: ""
-          ansiblePlaybooks:
-            - fetch_kubeconfig.yml
-          ansibleDebug: false
-          ansiblePlaybookExtraEnvironmentVariables:
-            - name: CI_WORKSPACE
-              value: "$(Pipeline.Workspace)"
-            - name: KUBE_CONFIG_DEST_PATH
-              value: "$(kubeconfigArtifactPath)"
-
-      - job: "publish"
-        displayName: "Publish Artifact"
-        dependsOn: "fetchKubeconfig"
+      - job: "fetchKubeconfig"
+        displayName: "Fetch Kubeconfig from K8s Controller"
         steps:
+          - template: apply-ansible.yml@templates
+            parameters:
+              pythonVenvPath: "$(System.DefaultWorkingDirectory)/.venv"
+              pythonVenvCacheVersion: "1"
+              pythonRequirementsFileRelativePath: "requirements.txt"
+              ansibleRequirementsFileRelativePath: "requirements.yml"
+              ansibleRepository: "self"
+              ansibleRepositoryAnsiblePath: "ansible"
+              ansibleConfigRelativePath: "ansible.cfg"
+              ansibleSshConfigurations:
+                - group: k8s_controller
+                  user: controller
+                  keySecretFileName: $(home-k8s-ssh-controller-key-secret-file)
+                  keyPassphrase: ""
+              ansiblePlaybooks:
+                - fetch_kubeconfig.yml
+              ansibleDebug: false
+              ansiblePlaybookExtraEnvironmentVariables:
+                - name: CI_WORKSPACE
+                  value: "$(Pipeline.Workspace)"
+                - name: KUBE_CONFIG_DEST_PATH
+                  value: "$(kubeconfigArtifactPath)"
+
           - task: Bash@3
             name: "verifyKubeConfig"
             displayName: "Verify Artifiact File Transfer"
