@@ -99,7 +99,7 @@ stages:
                   keyPassphrase: ""
               ansiblePlaybooks:
                 - fetch_kubeconfig.yml
-              ansibleDebug: $(ansibleDebug)
+              ansibleDebug: ${{ parameters.ansibleDebug }}
               ansiblePlaybookExtraEnvironmentVariables:
                 - name: CI_WORKSPACE
                   value: "$(Pipeline.Workspace)"
