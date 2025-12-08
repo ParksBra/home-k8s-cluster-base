@@ -8,206 +8,90 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  - name: venvPath
-    value: $(System.DefaultWorkingDirectory)/venv
-  - name: pythonRequirementsFileName
-    value: requirements.txt
-  - name: ansibleRequirementsFileName
-    value: requirements.yml
-  - name: cacheVersion
-    value: v01
-  - name: ansibleWorkspacePath
-    value: $(System.DefaultWorkingDirectory)/ansible
-  - name: ansibleConfigPath
-    value: $(ansibleWorkspacePath)/ansible.cfg
-  - name: ansibleDebug
-    value: "false"
-  - name: resetClusterFlag
-    value: "true"
   - group: home-k8s-ssh
+  - name: kubeconfigArtifactPath
+    value: '$(Build.ArtifactStagingDirectory)/kubeconfig'
 
 stages:
   - stage: "makeBaseCluster"
     displayName: "Make Base K8s Cluster"
+    variables:
+      - group: home-k8s-cluster
     jobs:
-      - job: "applyAnsible"
-        variables:
-          - group: home-k8s-cluster
-        displayName: "Apply Ansible Playbook"
-        steps:
-          - checkout: self
-            name: "checkoutCurrentRepo"
-            clean: "true"
-            displayName: 'Checkout Current Repository'
-
-          - task: Bash@3
-            name: "setupEnvironment"
-            displayName: "Setup Python Environment"
-            inputs:
-              targetType: "inline"
-              script: |
-                echo "##[group]Setup Python Virtual Environment"
-                    python3 -m venv $(venvPath)
-                    $(venvPath)/bin/pip install --upgrade pip
-                echo "##[endgroup]"
-              failOnStderr: true
-
-          - task: Cache@2
-            name: "cacheVenv"
-            displayName: "Cache Virtual Environment"
-            inputs:
-              key: 'venv$(cacheVersion) | "$(Agent.OS)" | $(ansibleWorkspacePath)/$(pythonRequirementsFileName)'
-              path: $(venvPath)
-              cacheHitVar: cacheRestored
-
-          - task: Bash@3
-            name: "installDependencies"
-            displayName: "Install Dependencies"
-            condition: ne(variables.cacheRestored, 'true')
-            inputs:
-              targetType: "inline"
-              script: |
-                echo "##[group]Install pip requirements"
-                    $(venvPath)/bin/pip install --upgrade -r $(ansibleWorkspacePath)/$(pythonRequirementsFileName)
-                    $(venvPath)/bin/pip install ansible
-                    ansible-galaxy collection install --force -r $(ansibleWorkspacePath)/$(ansibleRequirementsFileName)
-                echo "##[endgroup]"
-
-          - task: DownloadSecureFile@1
-            name: controllerKey
-            displayName: 'Fetch Controller SSH Key'
-            inputs:
-              secureFile: "$(home-k8s-ssh-controller-key-secret-file)"
-
-          - task: DownloadSecureFile@1
-            name: workerKey
-            displayName: 'Fetch Worker SSH Key'
-            inputs:
-              secureFile: "$(home-k8s-ssh-worker-key-secret-file)"
-
-          - task: Bash@3
-            name: "ansibleBaseCluster"
-            displayName: "Make Base K8s Cluster via Ansible"
-            env:
-              ANSIBLE_CONFIG: "$(ansibleConfigPath)"
-              DEBUG: "$(ansibleDebug)"
-              CI_WORKSPACE: "$(System.DefaultWorkingDirectory)"
-              CONTROLLER_SSH_KEY_PATH: "$(controllerKey.secureFilePath)"
-              CONTROLLER_SSH_USER: "$(home-k8s-ssh-controller-user)"
-              WORKER_SSH_KEY_PATH: "$(workerKey.secureFilePath)"
-              WORKER_SSH_USER: "$(home-k8s-ssh-worker-user)"
-              K8S_CLUSTER_DOMAIN: "$(home-k8s-cluster-cluster-domain)"
-              K8S_POD_NETWORK_CIDR: "$(home-k8s-cluster-pod-network-cidr)"
-              K8S_SERVICE_NETWORK_CIDR: "$(home-k8s-cluster-service-network-cidr)"
-              K8S_DISCOVERY_TOKEN: "$(home-k8s-cluster-discovery-token)"
-              K8S_FORCE_CLUSTER_RESET: "$(resetClusterFlag)"
-            inputs:
-              targetType: "inline"
-              script: |
-                echo "##[group]Set Permissions for SSH Key(s)"
-                    chmod 600 $CONTROLLER_SSH_KEY_PATH
-                    chmod 600 $WORKER_SSH_KEY_PATH
-                echo "##[endgroup]"
-
-                echo "##[group]Run the Ansible Playbook"
-                    cd $(ansibleWorkspacePath)
-                    $(venvPath)/bin/ansible-playbook $(ansibleWorkspacePath)/playbooks/cluster_base.yml
-                echo "##[endgroup]"
-              # failOnStderr: true
+      - template: apply-ansible.yml@templates
+        parameters:
+          pythonVenvPath: "$(System.DefaultWorkingDirectory)/.venv"
+          pythonVenvCacheVersion: "1"
+          pythonRequirementsFileRelativePath: "requirements.txt"
+          ansibleRequirementsFileRelativePath: "requirements.yml"
+          ansibleRepository: "self"
+          ansibleRepositoryAnsiblePath: "ansible"
+          ansibleConfigRelativePath: "ansible.cfg"
+          ansibleSshConfigurations:
+            - group: k8s_controller
+              user: controller
+              keySecretFileName: home-k8s-ssh-controller-private-key
+              keyPassphrase: ""
+            - group: k8s_worker
+              user: worker
+              keySecretFileName: home-k8s-ssh-worker-private-key
+              keyPassphrase: ""
+          ansiblePlaybooks:
+            - playbooks/cluster_base.yml
+          ansibleDebug: false
+          ansiblePlaybookExtraEnvironmentVariables:
+            CI_WORKSPACE: "$(System.DefaultWorkingDirectory)"
+            K8S_CLUSTER_DOMAIN: "$(home-k8s-cluster-cluster-domain)"
+            K8S_POD_NETWORK_CIDR: "$(home-k8s-cluster-pod-network-cidr)"
+            K8S_SERVICE_NETWORK_CIDR: "$(home-k8s-cluster-service-network-cidr)"
+            K8S_DISCOVERY_TOKEN: "$(home-k8s-cluster-discovery-token)"
+            K8S_FORCE_CLUSTER_RESET: "false"
 
   - stage: "fetchKubeconfigArtifact"
     displayName: "Fetch Kubeconfig for Artifact"
     jobs:
-      - job: "applyAnsible"
-        variables:
-          - group: home-k8s-ssh
-        displayName: "Apply Ansible Playbook"
+      - template: apply-ansible.yml@templates
+        parameters:
+          pythonVenvPath: "$(System.DefaultWorkingDirectory)/.venv"
+          pythonVenvCacheVersion: "1"
+          pythonRequirementsFileRelativePath: "requirements.txt"
+          ansibleRequirementsFileRelativePath: "requirements.yml"
+          ansibleRepository: "self"
+          ansibleRepositoryAnsiblePath: "ansible"
+          ansibleConfigRelativePath: "ansible.cfg"
+          ansibleSshConfigurations:
+            - group: k8s_controller
+              user: controller
+              keySecretFileName: home-k8s-ssh-controller-private-key
+              keyPassphrase: ""
+          ansiblePlaybooks:
+            - playbooks/ci_fetch_kubeconfig.yml
+          ansibleDebug: false
+          ansiblePlaybookExtraEnvironmentVariables:
+            CI_WORKSPACE: "$(System.DefaultWorkingDirectory)"
+            KUBE_CONFIG_DEST_PATH: "$(kubeconfigArtifactPath)"
+
+      - job: "publishKubeconfigArtifact"
+        displayName: "Publish Kubeconfig Artifact"
         steps:
-          - checkout: self
-            name: "checkoutCurrentRepo"
-            clean: "true"
-            displayName: 'Checkout Current Repository'
-
-          - task: Bash@3
-            name: "setupEnvironment"
-            displayName: "Setup Python Environment"
-            inputs:
-              targetType: "inline"
-              script: |
-                echo "##[group]Setup Python Virtual Environment"
-                    python3 -m venv $(venvPath)
-                    $(venvPath)/bin/pip install --upgrade pip
-                echo "##[endgroup]"
-              failOnStderr: true
-
-          - task: Cache@2
-            name: "cacheVenv"
-            displayName: "Cache Virtual Environment"
-            inputs:
-              key: 'venv$(cacheVersion) | "$(Agent.OS)" | $(ansibleWorkspacePath)/$(pythonRequirementsFileName)'
-              path: $(venvPath)
-              cacheHitVar: cacheRestored
-
-          - task: Bash@3
-            name: "installDependencies"
-            displayName: "Install Role Dependencies"
-            condition: ne(variables.cacheRestored, 'true')
-            inputs:
-              targetType: "inline"
-              script: |
-                echo "##[group]Install pip requirements"
-                    $(venvPath)/bin/pip install --upgrade -r $(ansibleWorkspacePath)/$(pythonRequirementsFileName)
-                    $(venvPath)/bin/pip install ansible
-                    ansible-galaxy collection install --force -r $(ansibleWorkspacePath)/$(ansibleRequirementsFileName)
-                echo "##[endgroup]"
-
-          - task: DownloadSecureFile@1
-            name: controllerKey
-            displayName: 'Fetch Controller SSH Key'
-            inputs:
-              secureFile: "$(home-k8s-ssh-controller-key-secret-file)"
-
-          - task: Bash@3
-            name: "fetchKubeConfig"
-            displayName: "Fetch Kubeconfig via Ansible"
-            env:
-              ANSIBLE_CONFIG: "$(ansibleConfigPath)"
-              DEBUG: "$(ansibleDebug)"
-              CI_WORKSPACE: "$(System.DefaultWorkingDirectory)"
-              KUBE_CONFIG_PATH: "$(Build.StagingDirectory)/kubeconfig"
-              CONTROLLER_SSH_KEY_PATH: "$(controllerKey.secureFilePath)"
-              CONTROLLER_SSH_USER: "$(home-k8s-ssh-controller-user)"
-            inputs:
-              targetType: "inline"
-              script: |
-                echo "##[group]Set permissions for SSH Key"
-                    chmod 600 $CONTROLLER_SSH_KEY_PATH
-                echo "##[endgroup]"
-
-                echo "##[group]Run the Ansible Playbook"
-                    $(venvPath)/bin/ansible-playbook $(ansibleWorkspacePath)/playbooks/ci_fetch_kubeconfig.yml
-                echo "##[endgroup]"
-              # failOnStderr: true
-
           - task: Bash@3
             name: "verifyKubeConfig"
             displayName: "Verify Kubeconfig File Transfer"
             env:
-              KUBE_CONFIG_PATH: "$(Build.StagingDirectory)/kubeconfig"
+              KUBE_CONFIG_ARTIFACT_PATH: "$(kubeconfigArtifactPath)"
             inputs:
               targetType: "inline"
               script: |
                 echo "##[group]Verify Kubeconfig File Exists"
-                    if [ -f "$KUBE_CONFIG_PATH" ]; then
-                        echo "Kubeconfig file exists at $KUBE_CONFIG_PATH"
+                    if [ -f "$KUBE_CONFIG_ARTIFACT_PATH" ]; then
+                        echo "Kubeconfig file exists at $KUBE_CONFIG_ARTIFACT_PATH"
                     else
-                        echo "Kubeconfig file not found at $KUBE_CONFIG_PATH"
+                        echo "Kubeconfig file not found at $KUBE_CONFIG_ARTIFACT_PATH"
                         exit 1
                     fi
                 echo "##[endgroup]"
               failOnStderr: true
 
-          - publish: $(Build.StagingDirectory)/kubeconfig
+          - publish: $(kubeconfigArtifactPath)
             displayName: 'Publish Kubeconfig File as Artifact'
-            artifact: kubeconfigFile
-
+            artifact: kubeConfig

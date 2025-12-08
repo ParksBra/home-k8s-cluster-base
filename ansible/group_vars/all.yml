@@ -4,7 +4,7 @@ ansible_python_interpreter: "/usr/bin/python3.13"
 
 ci:
   workspace_path: "{{ lookup('env', 'CI_WORKSPACE') | default('.') }}"
-  kubeconfig_path: "{{ lookup('env', 'KUBE_CONFIG_PATH') | default(ci.workspace_path + '/kubeconfig', true) }}"
+  kubeconfig_path: "{{ lookup('env', 'KUBE_CONFIG_DEST_PATH') | default(ci.workspace_path + '/kubeconfig', true) }}"
 
 host:
   temp_directory: "/tmp/ansible_home"
