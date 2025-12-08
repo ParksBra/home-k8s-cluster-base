@@ -9,12 +9,14 @@ pool:
 
 parameters:
   - name: forceClusterReset
+    displayName: 'Force Kubernetes Cluster Reset'
     type: boolean
-    default: "false"
+    default: false
 
   - name: ansibleDebug
+    displayName: 'Enable Ansible Debugging'
     type: boolean
-    default: "false"
+    default: false
 
 variables:
   - group: home-k8s-ssh
