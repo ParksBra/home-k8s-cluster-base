@@ -45,7 +45,7 @@ stages:
               keySecretFileName: $(home-k8s-ssh-worker-key-secret-file)
               keyPassphrase: ""
           ansiblePlaybooks:
-            - playbooks/cluster_base.yml
+            - site.yml
           ansibleDebug: false
           ansiblePlaybookExtraEnvironmentVariables:
             - name: CI_WORKSPACE
@@ -82,7 +82,7 @@ stages:
               keySecretFileName: $(home-k8s-ssh-controller-key-secret-file)
               keyPassphrase: ""
           ansiblePlaybooks:
-            - playbooks/ci_fetch_kubeconfig.yml
+            - fetch_kubeconfig.yml
           ansibleDebug: false
           ansiblePlaybookExtraEnvironmentVariables:
             - name: CI_WORKSPACE
