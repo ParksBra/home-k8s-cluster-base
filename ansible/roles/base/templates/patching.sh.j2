@@ -1,0 +1,6 @@
+{% if host.patching.enabled %}
+apt update -y
+apt full-upgrade -y
+sleep 10
+shutdown -r now
+{% endif %}

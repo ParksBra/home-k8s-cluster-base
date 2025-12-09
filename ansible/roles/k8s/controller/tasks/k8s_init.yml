@@ -1,0 +1,56 @@
+- name: Reset cluster
+  ansible.builtin.include_tasks: k8s_reset_cluster.yml
+
+- name: Debug cluster config
+  when: debug
+  ansible.builtin.debug:
+    msg:
+      pod_network_cidr: "{{ kubernetes.cluster.network.pod_cidr }}"
+      service_network_cidr: "{{ kubernetes.cluster.network.service_cidr }}"
+      cluster_domain: "{{ kubernetes.cluster.network.domain }}"
+      container_runtime: "{{ kubernetes.cluster.container.runtime.name }}"
+      container_runtime_socket: "{{ kubernetes.cluster.container.runtime.socket }}"
+      cluster_controller_ip: "{{ kubernetes.controller.ip }}"
+      cluster_apiserver_ip: "{{ kubernetes.controller.apiserver.ip }}"
+      cluster_apiserver_port: "{{ kubernetes.controller.apiserver.port }}"
+      cluster_force_reset: "{{ kubernetes.cluster.kubeadm.force_reset }}"
+
+- name: Create/Init k8s cluster
+  when: reset_success
+  ansible.builtin.shell: |
+    kubeadm init --service-cidr {{ kubernetes.cluster.network.service_cidr }} \
+                  --kubernetes-version v{{ kubernetes.version }} \
+                  --pod-network-cidr {{ kubernetes.cluster.network.pod_cidr }} \
+                  --token {{ kubernetes.cluster.kubeadm.token }} \
+                  --apiserver-advertise-address {{ kubernetes.controller.apiserver.ip }} \
+                  --apiserver-bind-port {{ kubernetes.controller.apiserver.port }} \
+                  --cri-socket=unix://{{ kubernetes.cluster.container.runtime.socket }} \
+                  --service-dns-domain {{ kubernetes.cluster.network.domain }} \
+                  {{ kubernetes.cluster.kubeadm.extra_args | join(' ') }} \
+                  {{ kubernetes.cluster.kubeadm.extra_init_args | join(' ') }}
+  register: init_k8s_cluster
+  changed_when: "'Your Kubernetes control-plane has initialized successfully' in init_k8s_cluster.stdout"
+  environment:
+    no_proxy: "$no_proxy,.svc,.svc.{{ kubernetes.cluster.network.domain }}"
+  no_log: "{{ not debug }}"
+  any_errors_fatal: true
+
+- name: Create user k8s directory
+  when: init_k8s_cluster.rc == 0
+  ansible.builtin.file:
+    path: "{{ kubernetes.controller.kubeconfig.user_path | dirname }}"
+    state: directory
+    mode: 0700
+  become: true
+  become_user: "{{ kubernetes.controller.kubeconfig.user }}"
+
+- name: Copy admin.conf to Home directory
+  when: init_k8s_cluster.rc == 0
+  become: true
+  ansible.builtin.copy:
+    src: "{{ kubernetes.controller.kubeconfig.source }}"
+    dest: "{{ kubernetes.controller.kubeconfig.user_path }}"
+    owner: "{{ kubernetes.controller.kubeconfig.user }}"
+    group: "{{ kubernetes.controller.kubeconfig.user }}"
+    mode: 0600
+    remote_src: true

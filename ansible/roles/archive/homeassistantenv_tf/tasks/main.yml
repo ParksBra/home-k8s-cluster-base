@@ -1,0 +1,23 @@
+- name: Set requested templated values files variable
+  ansible.builtin.set_fact:
+    requested_values_templates_by_chart:
+      - chart: homeassistant
+        fragments:
+          - homeassistant
+        final_temp_path: "{{ remote_temp_directory }}/homeassistant_helm_values.yml"
+      - chart: mosquitto
+        fragments:
+          - mosquitto
+        final_temp_path: "{{ remote_temp_directory }}/mosquitto_helm_values.yml"
+      - chart: zigbee2mqtt
+        fragments:
+          - zigbee2mqtt
+        final_temp_path: "{{ remote_temp_directory }}/zigbee2mqtt_helm_values.yml"
+
+- name: Run terraform
+  ansible.builtin.include_role:
+    name: terraform
+  vars:
+    requested_values_templates_by_chart: "{{ requested_values_templates_by_chart }}"
+    tf_target_project: homeassistantenv
+    tf_state: planned

@@ -1,0 +1,117 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  name: 'local-lab'
+  vmImage: 'ubuntu-latest'
+
+parameters:
+  - name: forceClusterReset
+    displayName: 'Force Kubernetes Cluster Reset'
+    type: boolean
+    default: false
+
+  - name: ansibleDebug
+    displayName: 'Enable Ansible Debugging'
+    type: boolean
+    default: false
+
+variables:
+  - group: home-k8s-ssh
+  - name: kubeconfigArtifactPath
+    value: '$(Build.ArtifactStagingDirectory)/kubeconfig'
+
+resources:
+  repositories:
+    - repository: templates
+      type: github
+      endpoint: ParksBra
+      ref: main
+      name: ParksBra/home-k8s-ado-templates
+
+stages:
+  - template: ansible.yml@templates
+    parameters:
+      pythonVenvPath: "$(System.DefaultWorkingDirectory)/.venv"
+      pythonVenvCacheVersion: "1"
+      pythonRequirementsFileRelativePath: "requirements.txt"
+      ansibleRequirementsFileRelativePath: "requirements.yml"
+      ansibleRepository: "self"
+      ansibleRepositoryAnsiblePath: "ansible"
+      ansibleConfigRelativePath: "ansible.cfg"
+      ansibleSshConfigurations:
+        - group: k8s_controller
+          user: controller
+          keySecretFileName: $(home-k8s-ssh-controller-key-secret-file)
+          keyPassphrase: ""
+        - group: k8s_worker
+          user: worker
+          keySecretFileName: $(home-k8s-ssh-worker-key-secret-file)
+          keyPassphrase: ""
+      ansiblePlaybooks:
+        - site.yml
+      ansibleDebug: ${{ parameters.ansibleDebug }}
+      ansiblePlaybookExtraEnvironmentVariables:
+        - name: CI_WORKSPACE
+          value: "$(Pipeline.Workspace)"
+        - name: K8S_CLUSTER_DOMAIN
+          value: "$(home-k8s-cluster-cluster-domain)"
+        - name: K8S_POD_NETWORK_CIDR
+          value: "$(home-k8s-cluster-pod-network-cidr)"
+        - name: K8S_SERVICE_NETWORK_CIDR
+          value: "$(home-k8s-cluster-service-network-cidr)"
+        - name: K8S_DISCOVERY_TOKEN
+          value: "$(home-k8s-cluster-discovery-token)"
+        - name: K8S_FORCE_CLUSTER_RESET
+          value: "${{ parameters.forceClusterReset }}"
+
+  - stage: "fetchKubeconfigArtifact"
+    displayName: "Fetch Kubeconfig for Artifact"
+    condition: and(succeeded(), in(variables['Build.Reason'], 'Manual', 'IndividualCI'))
+    jobs:
+      - template: apply-ansible.yml@templates
+        parameters:
+          pythonVenvPath: "$(System.DefaultWorkingDirectory)/.venv"
+          pythonVenvCacheVersion: "1"
+          pythonRequirementsFileRelativePath: "requirements.txt"
+          ansibleRequirementsFileRelativePath: "requirements.yml"
+          ansibleRepository: "self"
+          ansibleRepositoryAnsiblePath: "ansible"
+          ansibleConfigRelativePath: "ansible.cfg"
+          ansibleSshConfigurations:
+            - group: k8s_controller
+              user: controller
+              keySecretFileName: $(home-k8s-ssh-controller-key-secret-file)
+              keyPassphrase: ""
+          ansiblePlaybooks:
+            - fetch_kubeconfig.yml
+          ansibleDebug: ${{ parameters.ansibleDebug }}
+          ansiblePlaybookExtraEnvironmentVariables:
+            - name: CI_WORKSPACE
+              value: "$(Pipeline.Workspace)"
+            - name: KUBE_CONFIG_DEST_PATH
+              value: "$(kubeconfigArtifactPath)"
+          postApplySteps:
+            - task: Bash@3
+              name: "verifyKubeConfig"
+              displayName: "Verify Artifiact File Transfer"
+              env:
+                KUBE_CONFIG_ARTIFACT_PATH: "$(kubeconfigArtifactPath)"
+              inputs:
+                targetType: "inline"
+                script: |
+                  echo "##[group]Verify Kubeconfig File Exists"
+                      if [ -f "$KUBE_CONFIG_ARTIFACT_PATH" ]; then
+                          echo "Kubeconfig file exists at $KUBE_CONFIG_ARTIFACT_PATH"
+                      else
+                          echo "Kubeconfig file not found at $KUBE_CONFIG_ARTIFACT_PATH"
+                          exit 1
+                      fi
+                  echo "##[endgroup]"
+                failOnStderr: true
+
+            - publish: $(kubeconfigArtifactPath)
+              displayName: 'Publish File as Artifact'
+              artifact: kubeConfig
