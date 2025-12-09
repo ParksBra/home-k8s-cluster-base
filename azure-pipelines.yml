@@ -28,7 +28,7 @@ resources:
     - repository: templates
       type: github
       endpoint: ParksBra
-      ref: initial_development
+      ref: main
       name: ParksBra/home-k8s-ado-templates
 
 stages:
