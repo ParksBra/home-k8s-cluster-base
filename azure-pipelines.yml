@@ -69,7 +69,9 @@ stages:
 
   - stage: "fetchKubeconfigArtifact"
     displayName: "Fetch Kubeconfig for Artifact"
-    condition: and(succeeded(), in(variables['Build.Reason'], 'Manual', 'IndividualCI'))
+    dependsOn: applyAnsible
+    condition: >-
+      in(dependencies.applyAnsible.result, 'Succeeded')
     jobs:
       - template: apply-ansible.yml@templates
         parameters:
