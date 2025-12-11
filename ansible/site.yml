@@ -2,7 +2,6 @@
 - hosts: all
   roles:
     - {role: base, tags: ['base']}
-    - {role: k8s/rpi5_prepare, tags: ['k8s_rpi5_prepare']}
     - {role: docker, tags: ['docker']}
     - {role: k8s/base, tags: ['k8s_base']}
   become: true
