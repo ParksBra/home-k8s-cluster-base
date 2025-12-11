@@ -1,13 +1,11 @@
 - name: Append {{ item }} to cmdline.txt
   ansible.builtin.shell: "sed -i '/{{ item }}/!s/$/ {{ item }}/w {{ host.temp_directory }}/sed_changes.txt' /boot/firmware/cmdline.txt"
   become: true
+  changed_when: false
 
 - name: Check if change_log is 0 bytes
   ansible.builtin.stat:
     path: "{{ host.temp_directory }}/sed_changes.txt"
   register: change_log
-
-- name: Notify reboot if cpuset cgroup was enabled
-  when: change_log.stat.size > 0
-  ansible.builtin.shell: "echo 'cgroup {{ item }} enabled, reboot required'"
+  changed_when: change_log.stat.size > 0
   notify: reboot
