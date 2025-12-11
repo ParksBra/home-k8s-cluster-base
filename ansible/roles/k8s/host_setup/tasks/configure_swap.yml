@@ -8,6 +8,13 @@
 - name: Disable swap if enabled
   when: swap_check.stdout != ""
   block:
+  - name: Ensure swap is not in fstab
+    ansible.builtin.mount:
+      name: swap
+      fstype: swap
+      state: absent
+    become: true
+
   - name: Install common swap package
     ansible.builtin.apt:
       name: dphys-swapfile
