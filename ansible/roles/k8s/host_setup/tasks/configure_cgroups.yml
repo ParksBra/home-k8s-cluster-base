@@ -8,16 +8,16 @@
 
     - name: Set cmdline.txt path based on os_prefix
       ansible.builtin.set_fact:
-        cmdline_path: "/boot/firmware/{{ os_prefix.stdout }}cmdline.txt"
+        discovered_cmdline_path: "/boot/firmware/{{ os_prefix.stdout }}cmdline.txt"
   rescue:
     - name: Set default cmdline.txt path
       ansible.builtin.set_fact:
-        cmdline_path: "/boot/firmware/cmdline.txt"
+        discovered_cmdline_path: "/boot/firmware/cmdline.txt"
 
 - name: Enable required cgroups
   ansible.builtin.include_tasks: append_cgroup.yml
   vars:
-    cmdline_path: "{{ cmdline_path }}"
+    cmdline_path: "{{ discovered_cmdline_path }}"
   loop:
     - cgroup_enable=cpuset
     - cgroup_enable=memory
