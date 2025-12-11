@@ -1,21 +1,23 @@
 ---
-- hosts: all
+- name: Configure base system, docker, and k8s base components
+  hosts: all
   roles:
     - {role: base, tags: ['base']}
-    - {role: k8s/rpi5_prepare, tags: ['k8s_rpi5_prepare']}
     - {role: docker, tags: ['docker']}
     - {role: k8s/base, tags: ['k8s_base']}
   become: true
   become_user: root
 
-- hosts: k8s_controller
+- name: Configure Kubernetes controller nodes
+  hosts: k8s_controller
   roles:
     - {role: k8s/controller, tags: ['k8s_controller']}
     - {role: helm, tags: ['helm']}
   become: true
   become_user: root
 
-- hosts: k8s_worker
+- name: Configure Kubernetes worker nodes
+  hosts: k8s_worker
   roles:
     - {role: k8s/worker, tags: ['k8s_worker']}
   become: true

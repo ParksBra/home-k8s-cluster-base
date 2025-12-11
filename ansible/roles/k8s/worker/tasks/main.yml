@@ -1,5 +1,5 @@
 - name: Check if kublet is configured
-  stat:
+  ansible.builtin.stat:
     path: "/etc/kubernetes/kubelet.conf"
   register: kubelet_configured
 

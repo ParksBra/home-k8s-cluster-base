@@ -4,7 +4,7 @@
     dest: "/etc/default/kubelet"
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   notify: "restart_kubelet"
 
 - name: Flush handlers to restart kubelet if needed

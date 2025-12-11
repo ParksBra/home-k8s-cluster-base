@@ -18,16 +18,17 @@
 - name: Create/Init k8s cluster
   when: reset_success
   ansible.builtin.shell: |
-    kubeadm init --service-cidr {{ kubernetes.cluster.network.service_cidr }} \
-                  --kubernetes-version v{{ kubernetes.version }} \
-                  --pod-network-cidr {{ kubernetes.cluster.network.pod_cidr }} \
-                  --token {{ kubernetes.cluster.kubeadm.token }} \
-                  --apiserver-advertise-address {{ kubernetes.controller.apiserver.ip }} \
-                  --apiserver-bind-port {{ kubernetes.controller.apiserver.port }} \
-                  --cri-socket=unix://{{ kubernetes.cluster.container.runtime.socket }} \
-                  --service-dns-domain {{ kubernetes.cluster.network.domain }} \
-                  {{ kubernetes.cluster.kubeadm.extra_args | join(' ') }} \
-                  {{ kubernetes.cluster.kubeadm.extra_init_args | join(' ') }}
+    kubeadm init \
+      --service-cidr {{ kubernetes.cluster.network.service_cidr }} \
+      --kubernetes-version v{{ kubernetes.version }} \
+      --pod-network-cidr {{ kubernetes.cluster.network.pod_cidr }} \
+      --token {{ kubernetes.cluster.kubeadm.token }} \
+      --apiserver-advertise-address {{ kubernetes.controller.apiserver.ip }} \
+      --apiserver-bind-port {{ kubernetes.controller.apiserver.port }} \
+      --cri-socket=unix://{{ kubernetes.cluster.container.runtime.socket }} \
+      --service-dns-domain {{ kubernetes.cluster.network.domain }} \
+      {{ kubernetes.cluster.kubeadm.extra_args | join(' ') }} \
+      {{ kubernetes.cluster.kubeadm.extra_init_args | join(' ') }}
   register: init_k8s_cluster
   changed_when: "'Your Kubernetes control-plane has initialized successfully' in init_k8s_cluster.stdout"
   environment:
@@ -40,7 +41,7 @@
   ansible.builtin.file:
     path: "{{ kubernetes.controller.kubeconfig.user_path | dirname }}"
     state: directory
-    mode: 0700
+    mode: "0700"
   become: true
   become_user: "{{ kubernetes.controller.kubeconfig.user }}"
 
@@ -52,5 +53,5 @@
     dest: "{{ kubernetes.controller.kubeconfig.user_path }}"
     owner: "{{ kubernetes.controller.kubeconfig.user }}"
     group: "{{ kubernetes.controller.kubeconfig.user }}"
-    mode: 0600
+    mode: "0600"
     remote_src: true

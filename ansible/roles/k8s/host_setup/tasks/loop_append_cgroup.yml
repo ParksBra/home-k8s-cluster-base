@@ -1,0 +1,11 @@
+- name: Append {{ item }} to cmdline.txt
+  ansible.builtin.shell: "sed -i '/{{ item }}/!s/$/ {{ item }}/w {{ host.temp_directory }}/sed_changes.txt' {{ cmdline_path }}"
+  become: true
+  changed_when: false
+
+- name: Check if change_log is 0 bytes
+  ansible.builtin.stat:
+    path: "{{ host.temp_directory }}/sed_changes.txt"
+  register: change_log
+  changed_when: change_log.stat.size > 0
+  notify: reboot

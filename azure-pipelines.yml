@@ -18,8 +18,14 @@ parameters:
     type: boolean
     default: false
 
+  - name: ansibleApply
+    displayName: 'Apply Ansible Playbooks'
+    type: boolean
+    default: true
+
 variables:
   - group: home-k8s-ssh
+  - group: home-k8s-cluster
   - name: kubeconfigArtifactPath
     value: '$(Build.ArtifactStagingDirectory)/kubeconfig'
 
@@ -34,8 +40,7 @@ resources:
 stages:
   - template: ansible.yml@templates
     parameters:
-      pythonVenvPath: "$(System.DefaultWorkingDirectory)/.venv"
-      pythonVenvCacheVersion: "1"
+      pythonVenvCacheVersion: "2"
       pythonRequirementsFileRelativePath: "requirements.txt"
       ansibleRequirementsFileRelativePath: "requirements.yml"
       ansibleRepository: "self"
@@ -53,6 +58,7 @@ stages:
       ansiblePlaybooks:
         - site.yml
       ansibleDebug: ${{ parameters.ansibleDebug }}
+      ansibleApply: ${{ parameters.ansibleApply }}
       ansiblePlaybookExtraEnvironmentVariables:
         - name: CI_WORKSPACE
           value: "$(Pipeline.Workspace)"
@@ -75,8 +81,7 @@ stages:
     jobs:
       - template: apply-ansible.yml@templates
         parameters:
-          pythonVenvPath: "$(System.DefaultWorkingDirectory)/.venv"
-          pythonVenvCacheVersion: "1"
+          pythonVenvCacheVersion: "2"
           pythonRequirementsFileRelativePath: "requirements.txt"
           ansibleRequirementsFileRelativePath: "requirements.yml"
           ansibleRepository: "self"
