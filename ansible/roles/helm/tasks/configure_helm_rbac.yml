@@ -2,17 +2,17 @@
   ansible.builtin.file:
     path: "{{ host.temp_directory }}"
     state: directory
-    mode: 0755
+    mode: "0755"
 
 - name: Copy RBAC configuration for helm
   ansible.builtin.template:
     src: helm_rbac_config.yml.j2
     dest: "{{ host.temp_directory }}/helm_rbac_config.yml"
+  changed_when: false
 
 - name: Apply RBAC configuration for helm
   ansible.builtin.command: "kubectl --kubeconfig={{ kubernetes.controller.kubeconfig.user_path }} apply -f {{ host.temp_directory }}/helm_rbac_config.yml"
-
-- name: Run helm repo update
-  shell: "helm --kubeconfig {{ kubernetes.controller.kubeconfig.user_path }} repo update"
-  register: helm_repo_update
-  failed_when: helm_repo_update.rc != 0 and 'no repositories found' not in helm_repo_update.stderr
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubernetes.controller.kubeconfig.user_path }}"
+    state: present
+    src: "{{ host.temp_directory }}/helm_rbac_config.yml"
