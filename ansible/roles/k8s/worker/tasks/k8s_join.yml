@@ -1,11 +1,11 @@
 - name: Reset k8s
   block:
-  - name: Reset k8s
-    ansible.builtin.include_role:
-      name: k8s/reset
-  - name: Set reset success
-    ansible.builtin.set_fact:
-      reset_success: true
+    - name: Reset k8s
+      ansible.builtin.include_role:
+        name: k8s/reset
+    - name: Set reset success
+      ansible.builtin.set_fact:
+        reset_success: true
   rescue:
     - name: Set reset failure
       ansible.builtin.set_fact:
@@ -14,11 +14,12 @@
 - name: Join to Kubernetes cluster
   when: reset_success
   ansible.builtin.shell: |
-    kubeadm join --token {{ kubernetes.cluster.kubeadm.token }} \
-                --discovery-token-unsafe-skip-ca-verification \
-                --cri-socket=unix://{{ kubernetes.cluster.container.runtime.socket }} \
-                {{ kubernetes.cluster.kubeadm.extra_args | join(' ') }} \
-                {{ kubernetes.controller.apiserver.ip }}:{{ kubernetes.controller.apiserver.port }}
+    kubeadm join \
+      --token {{ kubernetes.cluster.kubeadm.token }} \
+      --discovery-token-unsafe-skip-ca-verification \
+      --cri-socket=unix://{{ kubernetes.cluster.container.runtime.socket }} \
+      {{ kubernetes.cluster.kubeadm.extra_args | join(' ') }} \
+      {{ kubernetes.controller.apiserver.ip }}:{{ kubernetes.controller.apiserver.port }}
   register: join_k8s_cluster
   changed_when: "'This node has joined the cluster' in join_k8s_cluster.stdout"
   environment:

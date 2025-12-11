@@ -25,6 +25,7 @@ parameters:
 
 variables:
   - group: home-k8s-ssh
+  - group: home-k8s-cluster
   - name: kubeconfigArtifactPath
     value: '$(Build.ArtifactStagingDirectory)/kubeconfig'
 
