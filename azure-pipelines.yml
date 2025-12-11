@@ -18,6 +18,11 @@ parameters:
     type: boolean
     default: false
 
+  - name: ansibleApply
+    displayName: 'Apply Ansible Playbooks'
+    type: boolean
+    default: true
+
 variables:
   - group: home-k8s-ssh
   - name: kubeconfigArtifactPath
@@ -52,6 +57,7 @@ stages:
       ansiblePlaybooks:
         - site.yml
       ansibleDebug: ${{ parameters.ansibleDebug }}
+      ansibleApply: ${{ parameters.ansibleApply }}
       ansiblePlaybookExtraEnvironmentVariables:
         - name: CI_WORKSPACE
           value: "$(Pipeline.Workspace)"
