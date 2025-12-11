@@ -1,6 +1,5 @@
 - name: Append {{ item }} to cmdline.txt
   ansible.builtin.shell: "sed -i '/{{ item }}/!s/$/ {{ item }}/w {{ host.temp_directory }}/sed_changes.txt' {{ cmdline_path }}"
-  loop: "{{ cgroups_to_enable }}"
   become: true
   changed_when: false
 
