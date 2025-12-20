@@ -7,5 +7,5 @@
   ansible.builtin.stat:
     path: "{{ host.temp_directory }}/sed_changes.txt"
   register: change_log
-  changed_when: change_log.stat.size > 0
+  changed_when: change_log.stat.exists and change_log.stat.size > 0
   notify: reboot

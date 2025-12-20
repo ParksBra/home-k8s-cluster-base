@@ -6,10 +6,12 @@
   become: true
   notify: restart_containerd
 
-- name: Copy containerd modules file
-  ansible.builtin.template:
-    src: containerd_modules.conf.j2
-    dest: /etc/modules-load.d/containerd.conf
-    mode: "0644"
+- name: Load dependent kernel modules
+  ansible.builtin.modprobe:
+    name: "{{ item }}"
+    persistent: "present"
+    state: "present"
+  loop:
+    - overlay
+    - br_netfilter
   become: true
-  notify: restart_containerd
