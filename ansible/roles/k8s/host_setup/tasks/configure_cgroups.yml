@@ -14,6 +14,12 @@
       ansible.builtin.set_fact:
         discovered_cmdline_path: "/boot/firmware/cmdline.txt"
 
+- name: debug path
+  ansible.builtin.debug:
+    msg:
+      - "Using cmdline.txt path: '{{ discovered_cmdline_path }}'"
+      - "Prefix found: '{{ os_prefix.stdout | default('not found') }}'"
+
 - name: Enable required cgroups
   ansible.builtin.include_tasks: loop_append_cgroup.yml
   vars:
