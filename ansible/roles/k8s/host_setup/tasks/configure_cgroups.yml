@@ -1,7 +1,7 @@
 - name: Determine cmdline.txt location
   block:
     - name: Get os_prefix value
-      ansible.builtin.shell: "sudo vcgencmd get_config os_prefix | cut -d= -f2"
+      ansible.builtin.shell: "vcgencmd get_config os_prefix | cut -d= -f2"
       register: os_prefix
       changed_when: false
       become: true
