@@ -1,5 +1,8 @@
-- name: Get k8s release signing key
-  ansible.builtin.shell: 'curl -fsSL https://pkgs.k8s.io/core:/stable:/v{{ kubernetes.patch_version }}/deb/Release.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg'
+- name: Get kubernetes release signing key
+  ansible.builtin.get_url:
+    url: https://pkgs.k8s.io/core:/stable:/v{{ kubernetes.patch_version }}/deb/Release.key
+    dest: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    mode: '0644'
   become: true
 
 - name: Add in apt source for k8s
