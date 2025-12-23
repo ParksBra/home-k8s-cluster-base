@@ -5,6 +5,12 @@
     mode: '0644'
   become: true
 
+- name: Debug values
+  ansible.builtin.debug:
+    msg:
+      - "Architecture: {{ ansible_architecture }}"
+      - "Distribution Release: {{ ansible_distribution_release }}"
+
 - name: Add in apt source for docker
   ansible.builtin.apt_repository:
     repo: 'deb [arch={{ ansible_architecture }} signed-by=/etc/apt/keyrings/docker-apt-keyring.gpg] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable'
