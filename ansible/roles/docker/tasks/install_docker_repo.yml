@@ -4,6 +4,7 @@
     dest: /etc/apt/keyrings/docker-apt-keyring.gpg
     mode: '0644'
   become: true
+  check_mode: false
 
 - name: Debug values
   ansible.builtin.debug:
@@ -18,3 +19,4 @@
     filename: 'docker'
     update_cache: true
   become: true
+  check_mode: false

@@ -4,6 +4,7 @@
     dest: /etc/apt/keyrings/helm-apt-keyring.gpg
     mode: '0644'
   become: true
+  check_mode: false
 
 - name: Add in apt source for helm
   ansible.builtin.apt_repository:
@@ -12,3 +13,4 @@
     filename: 'helm'
     update_cache: true
   become: true
+  check_mode: false
