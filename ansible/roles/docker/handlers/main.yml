@@ -3,4 +3,5 @@
     name: containerd
     state: restarted
   become: true
+  ignore_errors: "{{ ansible_check_mode }}"
   listen: restart_containerd
