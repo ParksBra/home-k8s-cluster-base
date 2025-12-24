@@ -26,6 +26,7 @@
     state: started
     daemon_reload: true
   become: true
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Install python k8s library
   ansible.builtin.apt:
