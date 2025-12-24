@@ -15,25 +15,25 @@
       state: absent
     become: true
 
-  - name: Install common swap package
-    ansible.builtin.apt:
-      name: dphys-swapfile
-      state: present
-    become: true
+  # - name: Install common swap package
+  #   ansible.builtin.apt:
+  #     name: dphys-swapfile
+  #     state: present
+  #   become: true
 
-  - name: Ensure rpi-swap is removed
-    ansible.builtin.apt:
-      name: rpi-swap
-      state: absent
-    become: true
+  # - name: Ensure rpi-swap is removed
+  #   ansible.builtin.apt:
+  #     name: rpi-swap
+  #     state: absent
+  #   become: true
 
-  - name: Disable swap service
-    ansible.builtin.service:
-      name: dphys-swapfile
-      enabled: false
-      masked: true
-      state: stopped
-    become: true
+  # - name: Disable swap service
+  #   ansible.builtin.service:
+  #     name: dphys-swapfile
+  #     enabled: false
+  #     masked: true
+  #     state: stopped
+  #   become: true
 
   - name: Mask swap in systemd
     ansible.builtin.systemd:

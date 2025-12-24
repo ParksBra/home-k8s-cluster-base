@@ -1,7 +1,7 @@
 - name: Determine cmdline.txt location
   block:
     - name: Get os_prefix value
-      ansible.builtin.shell: "sudo vcgencmd get_config os_prefix | cut -d= -f2"
+      ansible.builtin.shell: "vcgencmd get_config os_prefix | cut -d= -f2"
       register: os_prefix
       changed_when: false
       become: true
@@ -13,6 +13,12 @@
     - name: Set default cmdline.txt path
       ansible.builtin.set_fact:
         discovered_cmdline_path: "/boot/firmware/cmdline.txt"
+
+- name: debug path
+  ansible.builtin.debug:
+    msg:
+      - "Using cmdline.txt path: '{{ discovered_cmdline_path }}'"
+      - "Prefix found: '{{ os_prefix.stdout | default('not found') }}'"
 
 - name: Enable required cgroups
   ansible.builtin.include_tasks: loop_append_cgroup.yml

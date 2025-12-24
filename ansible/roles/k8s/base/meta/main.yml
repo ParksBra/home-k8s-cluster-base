@@ -1,4 +1,4 @@
 dependencies:
   - role: k8s/host_setup
-  - role: apt_repos
+  # - role: apt_repos
   - role: docker
