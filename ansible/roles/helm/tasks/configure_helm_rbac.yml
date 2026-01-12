@@ -9,6 +9,7 @@
     src: helm_rbac_config.yml.j2
     dest: "{{ host.temp_directory }}/helm_rbac_config.yml"
   changed_when: false
+  check_mode: false
 
 - name: Apply RBAC configuration for helm
   kubernetes.core.k8s:
